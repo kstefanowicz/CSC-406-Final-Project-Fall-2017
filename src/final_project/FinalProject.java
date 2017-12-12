@@ -1,25 +1,16 @@
 package final_project;
 
-
 import processing.core.PApplet;
 import processing.core.PImage;
 
-import java.awt.geom.Point2D;
-import java.util.Vector;
-
-import Jama.*;
-
-//  NEW	
-//	This version supports a manipulator with a 3D workspace and joint space.
-//	The inverse kinematics implemented allows us to adjust the orientation of the
-//	tip of the manipulator in addition to its position. (check out handleKeyPressed for that).
-//
-//	A line //NEW
-//	indicates a block that has changed from V1
 
 public class FinalProject extends PApplet implements ApplicationConstants {
 
-	
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The background.
@@ -27,21 +18,25 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 	 */
 	private PImage backgroundImage_;
 	private BouncingBall ball1_;
+	private BouncingBall ball2_;
 	private float lastTime_;
 	private int frameIndex_ = 0;
-
 	
 	public void settings() {
+
+		//Initial Scene configuration
 		size(WINDOW_WIDTH, WINDOW_HEIGHT, P3D);
 	}
 
 	public void setup() {
-		frameRate(400);
 
+		frameRate(60);
+		
 		//Image loading section
 		backgroundImage_ = loadImage("low_res_gravel.png");
-		
-		ball1_ = new BouncingBall();
+
+		ball1_ = new BouncingBall(-40, 0, 80, 1);
+		ball2_ = new BouncingBall(-60, 0, 80, 3);
 		
 		textureMode(NORMAL);
 		camera(0, 2*YMIN, 50, 0, 0, 0, 0, 0, -1); 
@@ -49,30 +44,33 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 	}
 
 	public void draw() {
-	  // flickering background to see the framerate interference
-	  // when loading an image. there should be none since the images
-	  // are loaded in their own thread.
-	  
-	  
+
 		frameIndex_++;
-		if (frameIndex_ % 4 == 0) {
-			background(0);
-			lights();
+		background(0);
+		lights();
 
-			drawSurface();
+		drawSurface();
 
-			ball1_.draw(this);	
-		}
+		ball1_.draw(this);	
+		ball2_.draw(this);
 		
 		int t = millis();
 		float dt = (t - lastTime_) * 0.001f;
-		ball1_.update(dt);
+		
+		ball1_.update(dt, 0, 0, 0, 0, 0, 1);
+		ball2_.update(dt, 0, 0, 0, 0, 0, 1);
+		
+		if (ball1_.checkCollision(ball2_)) {
+			ball1_.handleCollision(ball2_);
+		}
 		
 		lastTime_ = t;
 	}
-	
-	void drawSurface() {
 
+	void drawSurface(){
+
+		pushMatrix();
+		
 		beginShape(QUADS);
 		texture(backgroundImage_);
 
@@ -82,10 +80,12 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 		vertex(XMAX, YMAX, 0, 1, 1);
 
 		endShape(CLOSE);   
+
+		popMatrix();
 	}
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+	public static void main(String _args[]) {
 		PApplet.main("final_project.FinalProject");
 	}
+
 }

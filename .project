@@ -18,7 +18,7 @@
 		<link>
 			<name>core.jar</name>
 			<type>1</type>
-			<locationURI>PARENT-4-PROJECT_LOC/Applications/Processing.app/Contents/Java/core.jar</locationURI>
+			<location>C:/Users/kevin/Downloads/Processing/processing-3.3.6/core/library/core.jar</location>
 		</link>
 	</linkedResources>
 </projectDescription>

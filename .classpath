@@ -4,8 +4,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="core.jar"/>
 	<classpathentry kind="lib" path="Jama-1.0.3.jar"/>
-	<classpathentry kind="lib" path="/Applications/Processing.app/Contents/Java/core/library/gluegen-rt.jar"/>
-	<classpathentry kind="lib" path="/Applications/Processing.app/Contents/Java/core/library/jogl-all.jar"/>
-	<classpathentry kind="lib" path="/Users/devingould/Documents/Processing/libraries/Drop/library/Drop.jar"/>
+	<classpathentry kind="lib" path="C:/Users/kevin/Downloads/Processing/processing-3.3.6/core/library/gluegen-rt.jar"/>
+	<classpathentry kind="lib" path="C:/Users/kevin/Downloads/Processing/processing-3.3.6/core/library/jogl-all.jar"/>
+	<classpathentry kind="lib" path="C:/Users/kevin/OneDrive/Documents/Processing/libraries/Drop/library/Drop.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

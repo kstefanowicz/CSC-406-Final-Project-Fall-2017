@@ -3,26 +3,30 @@ package final_project;
 import java.util.Vector;
 
 import Jama.Matrix;
-import processing.core.PApplet;
+import processing.core.*;
 
 public class BouncingBall implements ApplicationConstants {
 
 	private float bx_ = -40, by_ = 0, bz_ = 80;
 	private float mass = 1;
 	private float Vx_ = -9, Vy_ = 0, Vz_ = 10;
-	private float rad_ = 5;
+	private float rad_ = 50;
 	private float refl_ = 1f;
 	private static final float ZERO_SPEED = 0.02f;
+	private PImage tex_;
+	private PShape sphere_;
 
 	public BouncingBall() {
 		
 	}
 	
-	public BouncingBall(float x, float y, float z, float mass) {
+	public BouncingBall(float x, float y, float z, float mass, PApplet app) {
 		bx_ = x;
 		by_ = y;
 		bz_ = z;
 		this.mass = mass;
+		app.noStroke();
+		sphere_ = app.createShape(PShape.SPHERE, (int)rad_);
 	}
 	
 	public void draw(PApplet app) {
@@ -30,8 +34,13 @@ public class BouncingBall implements ApplicationConstants {
 		app.pushMatrix();
 		
 		app.translate(bx_, by_, bz_);
+		app.rotateZ(90f);
+		app.rotateX(-90f);
+		if (tex_ != null){
+			sphere_.setTexture(tex_);
+		}
 		app.noStroke();
-		app.sphere(rad_);
+		app.shape(sphere_);
 		
 		app.popMatrix();
 	}
@@ -112,6 +121,15 @@ public class BouncingBall implements ApplicationConstants {
 		Vy_ = vector.getY();
 	}
 	
+	public PImage getTex_() {
+		return tex_;
+	}
+
+	public void setTex_(PImage tex_) {
+		this.tex_ = tex_;
+		this.tex_.updatePixels();
+	}
+
 	/**
 	 * Checks if the two balls have collided.
 	 * If the collided it sets there positions so they just touch
@@ -124,7 +142,7 @@ public class BouncingBall implements ApplicationConstants {
 		Vector3 bVector = other.getVector();
 		Vector3 aVector = getVector();
 		
-		// get the relative movemnt between the two objects
+		// get the relative movement between the two objects
 		Vector3 relativeMovementVector = aVector.minus(bVector).multiply(1/2);
 		float dist = aCenter.distance(bCenter);
 		float sumRadius = other.getRadius() + getRadius();

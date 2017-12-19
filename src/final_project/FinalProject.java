@@ -19,9 +19,7 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 	 * What type of ship doesn't have a starry sky?
 	 */
 	private PImage backgroundImage_;
-	private ArrayList<BouncingBall> balls = new ArrayList<BouncingBall>();
-	private BouncingBall ball1_;
-	private BouncingBall ball2_;
+	private ArrayList<Ball> balls = new ArrayList<Ball>();
 	private float lastTime_;
 	private int frameIndex_ = 0;
 	private int animCounter_ = 0;
@@ -42,6 +40,7 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 		//Image loading section
 		backgroundImage_ = loadImage("low_res_gravel.png");
 
+		//load images
 		images.add(loadImage("ice-cream-2934210_1920.jpg"));
 		images.add(loadImage("piggy-2889042_1920.jpg"));
 		images.add(loadImage("chemistry-2938901_1920.jpg"));
@@ -54,17 +53,19 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 		images.add(loadImage("trees-2920264_1920.jpg"));
 		images.add(loadImage("water-2943518_1920.jpg"));
 		images.add(loadImage("water-2986837_1920.jpg"));
-
-		balls.add(new BouncingBall(-40, 10, 80, 4, this));
-		balls.add(new BouncingBall(-60, 15, 80, 3, this));
-		balls.add(new BouncingBall(-80, 30, 50, 2, this));
-		balls.add(new BouncingBall(-20, 4, 30, 6, this));
-		balls.add(new BouncingBall(-80, 5, 50, 5, this));
-		balls.add(new BouncingBall(-20, 7, 30, 7, this));
-		balls.add(new BouncingBall(-80, 2, 50, 5.5f, this));
-		balls.add(new BouncingBall(-20, 8, 30, 3, this));
 		
-		for (BouncingBall ball : balls) {
+		//create default set of balls
+		balls.add(new Ball(-40, 10, 80, 4, this));
+		balls.add(new Ball(-60, 15, 80, 3, this));
+		balls.add(new Ball(-80, 30, 50, 2, this));
+		balls.add(new Ball(-20, 4, 30, 6, this));
+		balls.add(new Ball(-80, 5, 50, 5, this));
+		balls.add(new Ball(-20, 7, 30, 7, this));
+		balls.add(new Ball(-80, 2, 50, 5.5f, this));
+		balls.add(new Ball(-20, 8, 30, 3, this));
+		
+		//set textures for balls
+		for (Ball ball : balls) {
 			ball.setTex(images.get((int)Math.floor(Math.random() * images.size())));
 		}
 		
@@ -81,16 +82,17 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 
 		drawSurface();
 		
-		for (BouncingBall ball : balls) {
+		for (Ball ball : balls) {
 			ball.draw(this);
 		}
 		
 		int t = millis();
 		float dt = (t - lastTime_) * 0.001f;
 		
-		for (BouncingBall ball : balls) {
+		//collision checking and updating
+		for (Ball ball : balls) {
 			ball.update(dt, 0, 0, 0, 0, 0, 1);
-			for (BouncingBall otherBall : balls) {
+			for (Ball otherBall : balls) {
 				if (ball != otherBall) {
 					if (ball.checkCollision(otherBall, dt)) {
 						ball.handleCollision(otherBall);
@@ -103,12 +105,12 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 	}
 	
 	public void keyReleased() {
-		if (keyCode == 32) {
+		if (keyCode == 32) { // spacebar
 			float rad = (float) (Math.random() * 8 + 2);
 			float x = (float) (Math.random() * XMAX * 2 - XMAX);
 			float y = (float) (Math.random() * YMAX * 2 - YMAX);
 			float z = (float) (Math.random() * 100 + rad + 1);
-			BouncingBall ball = new BouncingBall(x, y, z, rad, this);
+			Ball ball = new Ball(x, y, z, rad, this);
 			ball.setTex(images.get((int)Math.floor(Math.random() * images.size())));
 			balls.add(ball);
 		}
@@ -120,7 +122,7 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 	
 	public void keyPressed() {
 		if (key == 'd') {
-			  cameraRotation += 1;
+			  cameraRotation += 3;
 			  cameraRotation %= 360;
 			  float ypos= cos(radians(cameraRotation))*2*YMIN;
 			  float xpos= sin(radians(cameraRotation))*2*YMIN;
@@ -128,7 +130,7 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 		}
 		
 		if (key == 'a') {
-			  cameraRotation -= 1;
+			  cameraRotation -= 3;
 			  cameraRotation %= 360;
 			  float ypos= cos(radians(cameraRotation))*2*YMIN;
 			  float xpos= sin(radians(cameraRotation))*2*YMIN;

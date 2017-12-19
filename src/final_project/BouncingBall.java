@@ -9,7 +9,7 @@ public class BouncingBall implements ApplicationConstants {
 
 	private float bx_ = -40, by_ = 0, bz_ = 80;
 	private float mass = 1;
-	private float Vx_ = -9, Vy_ = 0, Vz_ = 10;
+	private float Vx_ = -9, Vy_ = 4, Vz_ = 10;
 	private float rad_ = 5;
 	private float refl_ = 1f;
 	private static final float ZERO_SPEED = 0.02f;
@@ -18,15 +18,18 @@ public class BouncingBall implements ApplicationConstants {
 		
 	}
 	
-	public BouncingBall(float x, float y, float z, float mass) {
+	public BouncingBall(float x, float y, float z, float rad) {
 		bx_ = x;
 		by_ = y;
 		bz_ = z;
-		this.mass = mass;
+		rad_ = rad;
+		mass = rad_ * .5f;
+		Vx_ = (float) (Math.random() * 20 - 10);
+		Vy_ = (float) (Math.random() * 20 - 10);
+		Vz_ = (float) (Math.random() * 20 - 10);
 	}
 	
 	public void draw(PApplet app) {
-		System.out.println(Vx_ + " " + Vy_ + " " + Vz_);
 		app.pushMatrix();
 		
 		app.translate(bx_, by_, bz_);
@@ -118,14 +121,14 @@ public class BouncingBall implements ApplicationConstants {
 	 * @param other - Ball to check collision with
 	 * @return boolean - whether or not the balls collided
 	 */
-	public boolean checkCollision(BouncingBall other) {
+	public boolean checkCollision(BouncingBall other, float dt) {
 		Vector3 bCenter = other.getCenter();
 		Vector3 aCenter = getCenter();
 		Vector3 bVector = other.getVector();
 		Vector3 aVector = getVector();
 		
-		// get the relative movemnt between the two objects
-		Vector3 relativeMovementVector = aVector.minus(bVector).multiply(1/2);
+		// get the relative movement between the two objects
+		Vector3 relativeMovementVector = aVector.minus(bVector).multiply(dt);
 		float dist = aCenter.distance(bCenter);
 		float sumRadius = other.getRadius() + getRadius();
 		dist -= sumRadius;
@@ -185,6 +188,12 @@ public class BouncingBall implements ApplicationConstants {
 		float scaleMovement = relativeMovementVector.getMagnitude() / aVector.getMagnitude();
 		move(aVector.multiply(scaleMovement));
 		other.move(bVector.multiply(scaleMovement));
+		
+		
+		//collision is at midpoint between two vectors. Normalized and scaled by radius to account for any rounding error
+		Vector3 collisionPoint = getCenter().minus(other.getCenter()).normalize().multiply(getRadius());
+		float u = 0.5f + (float)(Math.atan2(collisionPoint.getZ(), collisionPoint.getY())/2*Math.PI);
+		float v = 0.5f - (float)(Math.asin(collisionPoint.getY())/Math.PI);
 		return true;
 	}
 	

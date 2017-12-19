@@ -26,8 +26,8 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 	private int frameIndex_ = 0;
 	private int animCounter_ = 0;
 	private int centerX1_ = 0, centerY1_ = 0, centerX2_ = 0, centerY2_ = 0;
-	private PImage firstBase_, secondBase_;
-	private float cameraX, cameraY, cameraZ;
+	private ArrayList<PImage> images = new ArrayList<PImage>();
+	private float cameraRotation = 0;
 
 	public void settings() {
 
@@ -42,9 +42,19 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 		//Image loading section
 		backgroundImage_ = loadImage("low_res_gravel.png");
 
-		firstBase_ = backgroundImage_; //loadImage("donald-duck.jpg");
-		secondBase_ = loadImage("donald-duck.jpg");
-		
+		images.add(loadImage("ice-cream-2934210_1920.jpg"));
+		images.add(loadImage("piggy-2889042_1920.jpg"));
+		images.add(loadImage("chemistry-2938901_1920.jpg"));
+		images.add(loadImage("christmas-2892235_1920.png"));
+		images.add(loadImage("christmas-2971961_1920.jpg"));
+		images.add(loadImage("powerboat-2784250_1920.jpg"));
+		images.add(loadImage("stadium-2921657_1920.jpg"));
+		images.add(loadImage("starryCloudySky.jpg"));
+		images.add(loadImage("ice-cream-2934210_1920.jpg"));
+		images.add(loadImage("trees-2920264_1920.jpg"));
+		images.add(loadImage("water-2943518_1920.jpg"));
+		images.add(loadImage("water-2986837_1920.jpg"));
+
 		balls.add(new BouncingBall(-40, 10, 80, 4, this));
 		balls.add(new BouncingBall(-60, 15, 80, 3, this));
 		balls.add(new BouncingBall(-80, 30, 50, 2, this));
@@ -55,7 +65,7 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 		balls.add(new BouncingBall(-20, 8, 30, 3, this));
 		
 		for (BouncingBall ball : balls) {
-			ball.setTex(secondBase_);
+			ball.setTex(images.get((int)Math.floor(Math.random() * images.size())));
 		}
 		
 		textureMode(NORMAL);
@@ -99,12 +109,30 @@ public class FinalProject extends PApplet implements ApplicationConstants {
 			float y = (float) (Math.random() * YMAX * 2 - YMAX);
 			float z = (float) (Math.random() * 100 + rad + 1);
 			BouncingBall ball = new BouncingBall(x, y, z, rad, this);
-			ball.setTex(secondBase_);
+			ball.setTex(images.get((int)Math.floor(Math.random() * images.size())));
 			balls.add(ball);
 		}
 		
 		if (key == 'r'){
 			startTexAnim();
+		}
+	}
+	
+	public void keyPressed() {
+		if (key == 'd') {
+			  cameraRotation += 1;
+			  cameraRotation %= 360;
+			  float ypos= cos(radians(cameraRotation))*2*YMIN;
+			  float xpos= sin(radians(cameraRotation))*2*YMIN;
+			  camera(xpos, ypos, 50, 0, 0, 0, 0, 0, -1);
+		}
+		
+		if (key == 'a') {
+			  cameraRotation -= 1;
+			  cameraRotation %= 360;
+			  float ypos= cos(radians(cameraRotation))*2*YMIN;
+			  float xpos= sin(radians(cameraRotation))*2*YMIN;
+			  camera(xpos, ypos, 50, 0, 0, 0, 0, 0, -1);
 		}
 	}
 	

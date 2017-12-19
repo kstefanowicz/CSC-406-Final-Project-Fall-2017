@@ -10,7 +10,7 @@ public interface ApplicationConstants {
 	
 	float G = 9.81f;
 	
-	int WINDOW_WIDTH = 600;
-	int WINDOW_HEIGHT = 600;
+	int WINDOW_WIDTH = 1000;
+	int WINDOW_HEIGHT = 1000;
 	
 }

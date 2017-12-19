@@ -16,10 +16,6 @@ public class BouncingBall implements ApplicationConstants {
 	private PImage tex_;
 	private PShape sphere_;
 
-	public BouncingBall() {
-		
-	}
-	
 	public BouncingBall(float x, float y, float z, float rad, PApplet app) {
 		bx_ = x;
 		by_ = y;
@@ -48,22 +44,42 @@ public class BouncingBall implements ApplicationConstants {
 		app.popMatrix();
 	}
 	
+	/**
+	 * Getter for velocity
+	 * @return velocity Vector3
+	 */
 	public Vector3 getVector() {
 		return new Vector3(Vx_, Vy_, Vz_);
 	}
 	
+	/**
+	 * Getter for center Vector3
+	 * @return center - Vector3
+	 */
 	public Vector3 getCenter() {
 		return new Vector3(bx_, by_, bz_);
 	}
 	
+	/**
+	 * Getter for mass
+	 * @return mass
+	 */
 	public float getMass() {
 		return mass;
 	}
 	
+	/**
+	 * Getter for radius
+	 * @return radius
+	 */
 	public float getRadius() {
 		return rad_;
 	}
 	
+	/**
+	 * Moves ball by a vector
+	 * @param movementVector - Vector3 to move ball by
+	 */
 	public void move(Vector3 movementVector) {
 		bx_ += movementVector.getX();
 		by_ += movementVector.getY();
@@ -76,8 +92,7 @@ public class BouncingBall implements ApplicationConstants {
 		float dotProd = dx*Nx + dy*Ny + dz*Nz;
 		float normN = PApplet.sqrt(Nx*Nx+Ny*Ny+Nz*Nz);
 		float dist = PApplet.abs(dotProd/normN);
-		if (dist <= rad_) {
-			System.out.println("Bounce!");			
+		if (dist <= rad_) {	
 			//	We are going to consider that the energy gets absorbed at
 			//	the moment of contact
 			Vx_ *= refl_;
@@ -118,21 +133,38 @@ public class BouncingBall implements ApplicationConstants {
 		Vz_ -= G * dt;
 	}
 	
-	public void setMovementVector(Vector3 vector) {
+	/**
+	 * Setter for velocity vector
+	 * @param new velocity vector
+	 */
+	public void setVelocityVector(Vector3 vector) {
 		Vx_ = vector.getX();
 		Vz_ = vector.getZ();
 		Vy_ = vector.getY();
 	}
 	
+	/**
+	 * Getter for texture
+	 * @return texture
+	 */
 	public PImage getTex() {
 		return tex_;
 	}
 
+	/**
+	 * Setter for texture
+	 * @param tex_
+	 */
 	public void setTex(PImage tex_) {
 		this.tex_ = tex_.copy();
 		this.tex_.updatePixels();
 	}
 	
+	/**
+	 * Start the animation for the texture at U,V coordinates
+	 * @param centerU
+	 * @param centerV
+	 */
 	public void startCollisionAnimation(float centerU, float centerV) {
 		PImage tex = getTex();
 		float centerX = tex.width * centerU;
@@ -173,7 +205,6 @@ public class BouncingBall implements ApplicationConstants {
 		// then they won't hit
 		float magnatude = relativeMovementVector.getMagnitude();
 		if (magnatude < dist) {
-			System.out.println("movement less than dist minus radius");
 			return false;
 		}
 		
@@ -185,7 +216,6 @@ public class BouncingBall implements ApplicationConstants {
 		
 		// if d is less than zero than the balls are not moving towards eachother
 		if (d <= 0) {
-			System.out.println("d <= 0");
 			return false;
 		}
 		
@@ -199,7 +229,6 @@ public class BouncingBall implements ApplicationConstants {
 		// if this is greater than the square of the radiuses 
 		// than they won't hit
 		if (f >= sumRadiusSquared) {
-			System.out.println("f >= sumRadiusSqaured");
 			return false;
 		}
 		
@@ -207,7 +236,6 @@ public class BouncingBall implements ApplicationConstants {
 		
 		// if t is negative we cant get the square root
 		if (t < 0) {
-			System.out.println("t < 0");
 			return false;
 		}
 		
@@ -216,7 +244,6 @@ public class BouncingBall implements ApplicationConstants {
 		float mag = relativeMovementVector.getMagnitude();
 		// if the distance is greater than the movements magnitude then they don't collide
 		if (mag < distance) {
-			System.out.println("mag < distance");
 			return false;
 		}
 		
@@ -235,6 +262,11 @@ public class BouncingBall implements ApplicationConstants {
 		return true;
 	}
 	
+	/**
+	 * Handles the collision between two balls
+	 * Determines their new velocity vectors after the collision
+	 * @param other
+	 */
 	public void handleCollision(BouncingBall other) {
 		Vector3 otherCenter = other.getCenter();
 		Vector3 thisCenter = getCenter();
@@ -256,10 +288,11 @@ public class BouncingBall implements ApplicationConstants {
 		
 		//calculate the new vector for otherCircle
 		Vector3 otherNewVector = otherVector.minus(n.multiply(magnitudeP * thisMass));
+		//calculate the new vector for this circle
 		Vector3 thisNewVector = thisVector.plus(n.multiply(magnitudeP * otherMass));
 		
-		other.setMovementVector(otherNewVector);
-		setMovementVector(thisNewVector);
+		other.setVelocityVector(otherNewVector);
+		setVelocityVector(thisNewVector);
 	}
 	
 }

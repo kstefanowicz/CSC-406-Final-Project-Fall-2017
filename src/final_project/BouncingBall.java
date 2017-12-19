@@ -10,21 +10,25 @@ public class BouncingBall implements ApplicationConstants {
 	private float bx_ = -40, by_ = 0, bz_ = 80;
 	private float mass = 1;
 	private float Vx_ = -9, Vy_ = 0, Vz_ = 10;
-	private float rad_ = 5;
+	private float rad_ = 25f;
 	private float refl_ = 1f;
 	private static final float ZERO_SPEED = 0.02f;
 	private PImage tex_;
+	private PImage base_;
 	private PShape sphere_;
+	private boolean isAnimated_ = false;
+	private float u_ = 0f, v_ = 0f;
+	private int animTimer_ = 0;
 
 	public BouncingBall() {
-		
+
 	}
-	
+
 	public BouncingBall(float x, float y, float z, float rad, PApplet app) {
 		bx_ = x;
 		by_ = y;
 		bz_ = z;
-		rad_ = rad;
+		//rad_ = rad;
 		mass = rad_ * .5f;
 		Vx_ = (float) (Math.random() * 20 - 10);
 		Vy_ = (float) (Math.random() * 20 - 10);
@@ -32,67 +36,68 @@ public class BouncingBall implements ApplicationConstants {
 		app.noStroke();
 		sphere_ = app.createShape(PShape.SPHERE, (int)rad_);
 	}
-	
+
 	public void draw(PApplet app) {
 		app.pushMatrix();
-		
+
 		app.translate(bx_, by_, bz_);
 		app.rotateZ(90f);
 		app.rotateX(-90f);
+		collisionAnimation();
 		if (tex_ != null){
 			sphere_.setTexture(tex_);
 		}
 		app.noStroke();
 		app.shape(sphere_);
-		
+
 		app.popMatrix();
 	}
-	
+
 	public Vector3 getVector() {
 		return new Vector3(Vx_, Vy_, Vz_);
 	}
-	
+
 	public Vector3 getCenter() {
 		return new Vector3(bx_, by_, bz_);
 	}
-	
+
 	public float getMass() {
 		return mass;
 	}
-	
+
 	public float getRadius() {
 		return rad_;
 	}
-	
+
 	public void move(Vector3 movementVector) {
 		bx_ += movementVector.getX();
 		by_ += movementVector.getY();
 		bz_ += movementVector.getZ();
 	}
-	
+
 	public void update(float dt, float Ax, float Ay, float Az, float Nx, float Ny, float Nz) {
-		
+
 		float dx = bx_ - Ax, dy = by_ - Ay, dz = bz_ - Az;
 		float dotProd = dx*Nx + dy*Ny + dz*Nz;
 		float normN = PApplet.sqrt(Nx*Nx+Ny*Ny+Nz*Nz);
 		float dist = PApplet.abs(dotProd/normN);
 		if (dist <= rad_) {
-			System.out.println("Bounce!");			
+			//System.out.println("Bounce!");			
 			//	We are going to consider that the energy gets absorbed at
 			//	the moment of contact
 			Vx_ *= refl_;
 			Vy_ *= refl_;
 			Vz_ *= refl_;
-			
+
 			//	Compute the component of incident velocity along the normal vector
 			float dotProdViN = Vx_*Nx + Vy_*Ny + Vz_*Nz;
 			float alpha = -2*dotProdViN/normN;
-			
+
 			//	And compute the symmetry relative to the plane of contact 
 			Vx_ += alpha*Nx;
 			Vy_ += alpha*Ny;
 			Vz_ += alpha*Nz;
-			
+
 			if (PApplet.abs(Vx_) < ZERO_SPEED)
 				Vx_ = 0.f;
 			if (PApplet.abs(Vy_) < ZERO_SPEED)
@@ -101,7 +106,7 @@ public class BouncingBall implements ApplicationConstants {
 				Vz_ = 0.f;
 
 		}
-		
+
 		if (bx_ <= XMIN || bx_ >= XMAX) {
 			Vx_ *= -1;
 		}
@@ -110,41 +115,54 @@ public class BouncingBall implements ApplicationConstants {
 		}
 
 		float halfdt2 = 0.5f * dt*dt;
-		
+
 		bx_ += Vx_ * dt;
 		by_ += Vy_ * dt;
 		bz_ += Vz_ * dt - G*halfdt2;		
-		
+
 		Vz_ -= G * dt;
 	}
-	
+
 	public void setMovementVector(Vector3 vector) {
 		Vx_ = vector.getX();
 		Vz_ = vector.getZ();
 		Vy_ = vector.getY();
 	}
-	
+
 	public PImage getTex() {
 		return tex_;
 	}
 
 	public void setTex(PImage tex_) {
 		this.tex_ = tex_.copy();
+		if(base_ == null){
+			base_ = this.tex_.copy();
+		}
 		this.tex_.updatePixels();
 	}
-	
-	public void startCollisionAnimation(float centerU, float centerV) {
+
+	public void collisionAnimation() {		
 		PImage tex = getTex();
-		float centerX = tex.width * centerU;
-		float centerY = tex.height * centerV;
+		float centerX = tex.width * getU_();
+		float centerY = tex.height * getV_();
 
 		tex.loadPixels();
-		for (int i = 0; i < tex.height; i++){
-			for (int j = 0; j < tex.width; j++){
-				if ((i - centerX) + (j - centerY) >= (90)){
-					tex.pixels[i*tex.width + j] = (tex.pixels[i+j] & 0xFF00FFFF) + 0x00A00000;
+
+		if(animTimer_ > 0){
+			for (int i = 0; i < tex.height; i++){
+				for (int j = 0; j < tex.width; j++){
+					if (Math.sqrt((i - centerY)*(i - centerY) + (j - centerX)*(j - centerX)) < 90*8 - animTimer_*8){
+						int pix = tex.pixels[i*tex.width + j];
+						tex.pixels[i*tex.width + j] = (pix & 0xFF00FFFF) + 0x00FF0000;
+					}
 				}
 			}
+			animTimer_ -= 1;
+		}
+
+		else{
+			tex = base_;
+			isAnimated_ = false;
 		}
 
 		tex.updatePixels();
@@ -162,79 +180,123 @@ public class BouncingBall implements ApplicationConstants {
 		Vector3 aCenter = getCenter();
 		Vector3 bVector = other.getVector();
 		Vector3 aVector = getVector();
-		
+
 		// get the relative movement between the two objects
 		Vector3 relativeMovementVector = aVector.minus(bVector).multiply(dt);
 		float dist = aCenter.distance(bCenter);
 		float sumRadius = other.getRadius() + getRadius();
 		dist -= sumRadius;
-		
+
 		// if the movements magnitude is less than the distance between the centers minus there radiuses
 		// then they won't hit
 		float magnatude = relativeMovementVector.getMagnitude();
 		if (magnatude < dist) {
-			System.out.println("movement less than dist minus radius");
+			//System.out.println("movement less than dist minus radius");
 			return false;
 		}
-		
+
 		Vector3 n = relativeMovementVector.normalize();
-		
+
 		Vector3 c = bCenter.minus(aCenter);
-		
+
 		float d = n.dot(c);
-		
+
 		// if d is less than zero than the balls are not moving towards eachother
 		if (d <= 0) {
-			System.out.println("d <= 0");
+			//System.out.println("d <= 0");
 			return false;
 		}
-		
+
 		float lengthC = c.getMagnitude();
-		
+
 		float f = (lengthC * lengthC) - (d * d);
-		
+
 		float sumRadiusSquared = sumRadius * sumRadius;
-		
+
 		// f is how close the spheres will get to eachother
 		// if this is greater than the square of the radiuses 
 		// than they won't hit
 		if (f >= sumRadiusSquared) {
-			System.out.println("f >= sumRadiusSqaured");
+			//System.out.println("f >= sumRadiusSqaured");
 			return false;
 		}
-		
+
 		float t = sumRadiusSquared - f;
-		
+
 		// if t is negative we cant get the square root
 		if (t < 0) {
-			System.out.println("t < 0");
+			//System.out.println("t < 0");
 			return false;
 		}
-		
+
 		// distance is how far the ball must travel to collide
 		float distance = d - (float) Math.sqrt((double) t);
 		float mag = relativeMovementVector.getMagnitude();
 		// if the distance is greater than the movements magnitude then they don't collide
 		if (mag < distance) {
-			System.out.println("mag < distance");
+			//System.out.println("mag < distance");
 			return false;
 		}
-		
+
 		// scale the movement for each ball so they just touch
 		float scaleMovement = relativeMovementVector.getMagnitude() / aVector.getMagnitude();
 		move(aVector.multiply(scaleMovement));
 		other.move(bVector.multiply(scaleMovement));
-		
-		
+
+
 		//collision is at midpoint between two vectors. Normalized and scaled by radius to account for any rounding error
-		Vector3 collisionPoint = getCenter().minus(other.getCenter()).normalize().multiply(getRadius());
+		Vector3 collisionPoint = getCenter().minus(other.getCenter()).normalize();
 		float u = 0.5f + (float)(Math.atan2(collisionPoint.getZ(), collisionPoint.getY())/2*Math.PI);
 		float v = 0.5f - (float)(Math.asin(collisionPoint.getY())/Math.PI);
-		startCollisionAnimation(u, v);
-		other.startCollisionAnimation(u, v);
+		if (!isAnimated_){
+			setU_(u);
+			setV_(v);
+			setAnimTimer_(90);
+			setIsAnimated(true);
+
+		}
+		if (!other.getIsAnimated()){
+			other.setU_(u);
+			other.setV_(v);
+			other.setAnimTimer_(90);
+			other.setIsAnimated(true);
+		}
 		return true;
 	}
-	
+
+	public boolean getIsAnimated() {
+		return isAnimated_;
+	}
+
+	public void setIsAnimated(boolean bool){
+		isAnimated_ = bool;
+	}
+
+
+	public float getU_() {
+		return u_;
+	}
+
+	public void setU_(float u_) {
+		this.u_ = u_;
+	}
+
+	public float getV_() {
+		return v_;
+	}
+
+	public void setV_(float v_) {
+		this.v_ = v_;
+	}
+
+	public int getAnimTimer_() {
+		return animTimer_;
+	}
+
+	public void setAnimTimer_(int animTimer_) {
+		this.animTimer_ = animTimer_;
+	}
+
 	public void handleCollision(BouncingBall other) {
 		Vector3 otherCenter = other.getCenter();
 		Vector3 thisCenter = getCenter();
@@ -242,24 +304,24 @@ public class BouncingBall implements ApplicationConstants {
 		Vector3 thisVector = getVector();
 		float otherMass = other.getMass();
 		float thisMass = getMass();
-		
+
 		//find the normalized vector from center of one circle to other
 		Vector3 n = otherCenter.minus(thisCenter);
 		n = n.normalize();
-		
+
 		//find the length along n
 		float a1 = otherVector.dot(n);
 		float a2 = thisVector.dot(n);
-		
+
 		//find the magnitude p for the difference in momentum
 		float magnitudeP = (2 * (a1 - a2)) / (otherMass + thisMass);
-		
+
 		//calculate the new vector for otherCircle
 		Vector3 otherNewVector = otherVector.minus(n.multiply(magnitudeP * thisMass));
 		Vector3 thisNewVector = thisVector.plus(n.multiply(magnitudeP * otherMass));
-		
+
 		other.setMovementVector(otherNewVector);
 		setMovementVector(thisNewVector);
 	}
-	
+
 }

@@ -10,7 +10,7 @@ public class BouncingBall implements ApplicationConstants {
 	private float bx_ = -40, by_ = 0, bz_ = 80;
 	private float mass = 1;
 	private float Vx_ = -9, Vy_ = 0, Vz_ = 10;
-	private float rad_ = 50;
+	private float rad_ = 5;
 	private float refl_ = 1f;
 	private static final float ZERO_SPEED = 0.02f;
 	private PImage tex_;
@@ -20,17 +20,20 @@ public class BouncingBall implements ApplicationConstants {
 		
 	}
 	
-	public BouncingBall(float x, float y, float z, float mass, PApplet app) {
+	public BouncingBall(float x, float y, float z, float rad, PApplet app) {
 		bx_ = x;
 		by_ = y;
 		bz_ = z;
-		this.mass = mass;
+		rad_ = rad;
+		mass = rad_ * .5f;
+		Vx_ = (float) (Math.random() * 20 - 10);
+		Vy_ = (float) (Math.random() * 20 - 10);
+		Vz_ = (float) (Math.random() * 20 - 10);
 		app.noStroke();
 		sphere_ = app.createShape(PShape.SPHERE, (int)rad_);
 	}
 	
 	public void draw(PApplet app) {
-		System.out.println(Vx_ + " " + Vy_ + " " + Vz_);
 		app.pushMatrix();
 		
 		app.translate(bx_, by_, bz_);
@@ -121,13 +124,31 @@ public class BouncingBall implements ApplicationConstants {
 		Vy_ = vector.getY();
 	}
 	
-	public PImage getTex_() {
+	public PImage getTex() {
 		return tex_;
 	}
 
-	public void setTex_(PImage tex_) {
-		this.tex_ = tex_;
+	public void setTex(PImage tex_) {
+		this.tex_ = tex_.copy();
 		this.tex_.updatePixels();
+	}
+	
+	public void startCollisionAnimation(float centerU, float centerV) {
+		PImage tex = getTex();
+		float centerX = tex.width * centerU;
+		float centerY = tex.height * centerV;
+
+		tex.loadPixels();
+		for (int i = 0; i < tex.height; i++){
+			for (int j = 0; j < tex.width; j++){
+				if ((i - centerX) + (j - centerY) >= (90)){
+					tex.pixels[i*tex.width + j] = (tex.pixels[i+j] & 0xFF00FFFF) + 0x00A00000;
+				}
+			}
+		}
+
+		tex.updatePixels();
+		setTex(tex);
 	}
 
 	/**
@@ -136,14 +157,14 @@ public class BouncingBall implements ApplicationConstants {
 	 * @param other - Ball to check collision with
 	 * @return boolean - whether or not the balls collided
 	 */
-	public boolean checkCollision(BouncingBall other) {
+	public boolean checkCollision(BouncingBall other, float dt) {
 		Vector3 bCenter = other.getCenter();
 		Vector3 aCenter = getCenter();
 		Vector3 bVector = other.getVector();
 		Vector3 aVector = getVector();
 		
 		// get the relative movement between the two objects
-		Vector3 relativeMovementVector = aVector.minus(bVector).multiply(1/2);
+		Vector3 relativeMovementVector = aVector.minus(bVector).multiply(dt);
 		float dist = aCenter.distance(bCenter);
 		float sumRadius = other.getRadius() + getRadius();
 		dist -= sumRadius;
@@ -203,6 +224,14 @@ public class BouncingBall implements ApplicationConstants {
 		float scaleMovement = relativeMovementVector.getMagnitude() / aVector.getMagnitude();
 		move(aVector.multiply(scaleMovement));
 		other.move(bVector.multiply(scaleMovement));
+		
+		
+		//collision is at midpoint between two vectors. Normalized and scaled by radius to account for any rounding error
+		Vector3 collisionPoint = getCenter().minus(other.getCenter()).normalize().multiply(getRadius());
+		float u = 0.5f + (float)(Math.atan2(collisionPoint.getZ(), collisionPoint.getY())/2*Math.PI);
+		float v = 0.5f - (float)(Math.asin(collisionPoint.getY())/Math.PI);
+		startCollisionAnimation(u, v);
+		other.startCollisionAnimation(u, v);
 		return true;
 	}
 	

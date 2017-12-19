@@ -22,6 +22,9 @@ public class Vector3 {
 	}
 	
 	public Vector3 minus(Vector3 other) {
+		System.out.println(x);
+		System.out.println(other.getX());
+		System.out.println(x - other.getX());
 		return new Vector3(x - other.getX(), y - other.getY(), z - other.getZ());
 	}
 	
